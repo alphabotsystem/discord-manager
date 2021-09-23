@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-manager-development
+  labels:
+    app: discord-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discord-manager
+  template:
+    metadata:
+      labels:
+        app: discord-manager
+    spec:
+      containers:
+      - name: discord-manager
+        image: alphabotsystem/alpha-discord-manager
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - name: alpha-service-keys
+            mountPath: /run/secrets/alpha-service
+            readOnly: true
+          - name: google-cloud-auth
+            mountPath: /run/secrets/google-cloud-auth
+            readOnly: true
+      volumes:
+        - name: alpha-service-keys
+          secret:
+            secretName: alpha-service-keys
+            items:
+              - key: credentials
+                path: key
+        - name: google-cloud-auth
+          secret:
+            secretName: google-cloud-auth
+            items:
+              - key: gcloud_credentials.json
+                path: key
