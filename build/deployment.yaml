@@ -20,9 +20,6 @@ spec:
         image: gcr.io/nlc-bot-36685/alpha-discord-manager
         imagePullPolicy: Always
         volumeMounts:
-          - name: alpha-service-keys
-            mountPath: /run/secrets/alpha-service
-            readOnly: true
           - name: google-cloud-auth
             mountPath: /run/secrets/google-cloud-auth
             readOnly: true
