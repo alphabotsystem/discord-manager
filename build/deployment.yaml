@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: discord-manager
-        image: gcr.io/nlc-bot-36685/alpha-discord-manager
+        image: europe-west4-docker.pkg.dev/nlc-bot-36685/alpha-bot/discord-manager
         imagePullPolicy: Always
         volumeMounts:
           - name: google-cloud-auth
