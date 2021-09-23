@@ -19,9 +19,6 @@ spec:
       - name: discord-manager
         image: gcr.io/nlc-bot-36685/alpha-discord-manager
         imagePullPolicy: Always
-        env:
-          - name: PRODUCTION_MODE
-            value: "1"
         volumeMounts:
           - name: alpha-service-keys
             mountPath: /run/secrets/alpha-service
@@ -33,13 +30,15 @@ spec:
           requests:
             memory: "100Mi"
             cpu: "10m"
+        env: 
+          - name: PRODUCTION_MODE
+            value: "1"
+          - name: DISCORD_MANAGER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: alpha-credentials
+                key: DISCORD_MANAGER_TOKEN
       volumes:
-        - name: alpha-service-keys
-          secret:
-            secretName: alpha-service-keys
-            items:
-              - key: credentials
-                path: key
         - name: google-cloud-auth
           secret:
             secretName: google-cloud-auth
