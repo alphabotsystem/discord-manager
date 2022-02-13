@@ -136,8 +136,8 @@ class Alpha(discord.AutoShardedClient):
 				await database.document("discord/statistics").set({"{}-{:02d}".format(t2.year, t2.month): statistics}, merge=True)
 
 			numOfCharts = ":chart_with_upwards_trend: {:,} charts requested".format(statistics["c"] + statistics["hmap"])
-			numOfAlerts = ":bell: {:,} alerts set".format(statistics["alerts"])
-			numOfPrices = ":money_with_wings: {:,} prices & details pulled".format(statistics["d"] + statistics["p"] + statistics["v"] + statistics["mcap"] + statistics["mk"] + statistics["convert"])
+			numOfAlerts = ":bell: {:,} alerts set".format(statistics["alert"])
+			numOfPrices = ":money_with_wings: {:,} prices & details pulled".format(statistics["d"] + statistics["p"] + statistics["v"] + statistics["info"] + statistics["mk"] + statistics["convert"])
 			numOfTrades = ":dart: {:,} trades executed".format(statistics["paper"] + statistics["x"])
 			numOfGuilds = ":heart: Used in {:,} Discord communities".format(statistics["servers"])
 
@@ -207,12 +207,10 @@ def handle_exit(sleepDuration=0):
 
 if __name__ == "__main__":
 	environ["PRODUCTION_MODE"] = environ["PRODUCTION_MODE"] if "PRODUCTION_MODE" in environ and environ["PRODUCTION_MODE"] else ""
-	print("[Startup]: Alpha Manager is in startup, running in {} mode.".format("production" if environ["PRODUCTION_MODE"] else "development"))
 
 	intents = discord.Intents.all()
 
 	client = Alpha(intents=intents, status=discord.Status.invisible)
-	print("[Startup]: object initialization complete")
 	client.prepare()
 
 	while True:
