@@ -26,10 +26,9 @@ logging = ErrorReportingClient(service="discord_manager")
 # Initialization
 # -------------------------
 
-intents = Intents.none()
-intents.guilds = True
+intents = Intents.all()
 
-bot = Bot(intents=intents, status=Status.idle, activity=None)
+bot = Bot(intents=intents, status=Status.invisible, activity=None)
 
 
 # -------------------------
