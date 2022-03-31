@@ -8,7 +8,8 @@ from pytz import utc
 from asyncio import CancelledError, sleep
 from traceback import format_exc
 
-from discord import Bot, Embed, Intents, Status
+from discord import Client, Embed, Intents, Status
+from discord.ext import tasks
 from discord.utils import get as getFromDiscord
 from google.cloud.firestore import AsyncClient as FirestoreAsyncClient
 from google.cloud.error_reporting import Client as ErrorReportingClient
@@ -28,7 +29,7 @@ logging = ErrorReportingClient(service="discord_manager")
 
 intents = Intents.all()
 
-bot = Bot(intents=intents, status=Status.invisible, activity=None)
+bot = Client(intents=intents, status=Status.invisible, activity=None)
 
 
 # -------------------------
@@ -39,6 +40,7 @@ bot = Bot(intents=intents, status=Status.invisible, activity=None)
 async def on_member_join(member):
 	await update_alpha_guild_roles(only=member.id)
 
+@tasks.loop(minutes=15.0)
 async def update_alpha_guild_roles(only=None):
 	try:
 		if not await accountProperties.check_status(): return
@@ -89,6 +91,7 @@ async def update_alpha_guild_roles(only=None):
 # Job functions
 # -------------------------
 
+@tasks.loop(minutes=1.0)
 async def update_system_status(t):
 	try:
 		statistics = await database.document("discord/statistics").get()
@@ -118,27 +121,6 @@ async def update_system_status(t):
 
 
 # -------------------------
-# Job queue
-# -------------------------
-
-async def job_queue():
-	while True:
-		try:
-			await sleep(Utils.seconds_until_cycle())
-			t = datetime.now().astimezone(utc)
-			timeframes = Utils.get_accepted_timeframes(t)
-
-			if "1m" in timeframes:
-				await update_system_status(t)
-			if "15m" in timeframes:
-				bot.loop.create_task(update_alpha_guild_roles())
-		except CancelledError: return
-		except Exception:
-			print(format_exc())
-			if environ["PRODUCTION_MODE"]: logging.report_exception()
-
-
-# -------------------------
 # Startup
 # -------------------------
 
@@ -162,6 +144,9 @@ async def on_ready():
 
 	await update_system_status(t)
 	await update_static_messages()
+
+	update_alpha_guild_roles.start()
+	update_system_status.start()
 
 	print("[Startup]: Alpha Manager is online")
 
@@ -190,5 +175,4 @@ async def update_static_messages():
 # Login
 # -------------------------
 
-bot.loop.create_task(job_queue())
-bot.loop.run_until_complete(bot.start(environ["DISCORD_MANAGER_TOKEN"]))
+bot.run(environ["DISCORD_MANAGER_TOKEN"])
