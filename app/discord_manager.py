@@ -92,8 +92,9 @@ async def update_alpha_guild_roles(only=None):
 # -------------------------
 
 @tasks.loop(minutes=1.0)
-async def update_system_status(t):
+async def update_system_status():
 	try:
+		t = datetime.now().astimezone(utc)
 		statistics = await database.document("discord/statistics").get()
 		statistics = statistics.to_dict()["{}-{:02d}".format(t.year, t.month)]
 		t2 = t + timedelta(minutes=5)
@@ -132,8 +133,6 @@ proRoles = None
 async def on_ready():
 	global alphaGuild, proRoles
 
-	t = datetime.now().astimezone(utc)
-
 	alphaGuild = bot.get_guild(414498292655980583)
 	proRoles = [
 		getFromDiscord(alphaGuild.roles, id=484387309303758848), # Alpha Pro role
@@ -142,7 +141,7 @@ async def on_ready():
 		getFromDiscord(alphaGuild.roles, id=601524236464553984)  # Beta tester role
 	]
 
-	await update_system_status(t)
+	await update_system_status()
 	await update_static_messages()
 
 	update_alpha_guild_roles.start()
