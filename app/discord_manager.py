@@ -144,8 +144,10 @@ async def on_ready():
 	await update_system_status()
 	await update_static_messages()
 
-	update_alpha_guild_roles.start()
-	update_system_status.start()
+	if not update_alpha_guild_roles.is_running():
+		update_alpha_guild_roles.start()
+	if not update_system_status.is_running():
+		update_system_status.start()
 
 	print("[Startup]: Alpha Manager is online")
 
