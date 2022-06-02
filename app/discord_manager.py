@@ -107,7 +107,7 @@ async def update_system_status():
 		numOfTrades = ":dart: {:,} trades executed".format(statistics["paper"] + statistics["x"])
 		numOfGuilds = ":heart: Used in {:,} Discord communities".format(statistics["servers"])
 
-		statisticsEmbed = Embed(title="{}\n{}\n{}\n{}\n{}".format(numOfCharts, numOfAlerts, numOfPrices, numOfTrades, numOfGuilds), color=0x673AB7)
+		statisticsEmbed = Embed(title=f"{numOfCharts}\n{numOfAlerts}\n{numOfPrices}\n{numOfTrades}\n{numOfGuilds}", color=0x673AB7)
 
 		statusChannel = bot.get_channel(560884869899485233)
 		statsMessage = await statusChannel.fetch_message(850729112321392640)
