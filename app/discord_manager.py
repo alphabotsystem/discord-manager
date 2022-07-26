@@ -69,9 +69,7 @@ async def update_alpha_guild_roles(only=None):
 					try: await member.remove_roles(proRoles[1])
 					except: pass
 
-				
-				legacy = properties["customer"].get("personalSubscription", {}).get("plan", "free") != "free"
-				if len(properties["customer"].get("subscriptions", {}).keys()) > 0 or legacy:
+				if len(properties["customer"].get("subscriptions", {}).keys()) > 0:
 					if proRoles[0] not in member.roles:
 						await member.add_roles(proRoles[0])
 				elif proRoles[0] in member.roles:
