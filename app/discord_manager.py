@@ -154,17 +154,9 @@ async def on_ready():
 async def update_static_messages():
 	if not environ["PRODUCTION_MODE"]: return
 	try:
-		faqAndRulesChannel = bot.get_channel(601160698310950914)
-		guildRulesMessage = await faqAndRulesChannel.fetch_message(850729258049601556)
-		termsOfServiceMessage = await faqAndRulesChannel.fetch_message(850729261216301086)
-		faqMessage = await faqAndRulesChannel.fetch_message(850731156391329793)
-		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of this official Alpha community must follow the community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alphabotsystem.com/community-rules) (last modified on January 31, 2020).", color=0x673AB7), suppress=False)
-		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alphabotsystem.com/terms-of-service) (last modified on March 6, 2020)\n[Privacy Policy](https://www.alphabotsystem.com/privacy-policy) (last modified on January 31, 2020).", color=0x673AB7), suppress=False)
-		if faqMessage is not None: await faqMessage.edit(content=None, embed=Embed(title="If you have any questions, refer to our FAQ section, guide, or ask for help in support channels.", description="[Frequently Asked Questions](https://www.alphabotsystem.com/faq)\n[Feature overview with examples](https://www.alphabotsystem.com/guide)\nFor other questions, use <#574196284215525386>.", color=0x673AB7), suppress=False)
-
 		ichibotChannel = bot.get_channel(825460988660023326)
 		howtoMessage = await ichibotChannel.fetch_message(850764390290030603)
-		if howtoMessage is not None: await howtoMessage.edit(content=None, embed=Embed(title="Best-in-class order execution client. Trade cryptocurrencies via Ichibot right in Discord.", description="[Sign up for a free account on our website](https://www.alphabotsystem.com/sign-up). If you already signed up, [sign in](https://www.alphabotsystem.com/sign-in), connect your account with your Discord profile, and add an API key. All Ichibot commands are prefixed with `x`. Learn more about Ichibot on their [GitLab page](https://www.alphabotsystem.com/guide/ichibot).", color=0x673AB7), suppress=False)
+		if howtoMessage is not None: await howtoMessage.edit(content=None, embed=Embed(title="Best-in-class order execution client. Trade cryptocurrencies via Ichibot right in Discord.", description="[Sign up for a free account on our website](https://www.alphabotsystem.com/signup). If you already signed up, [sign in](https://www.alphabotsystem.com/login), connect your account with your Discord profile, and add an API key. All Ichibot commands are prefixed with `x`. Learn more about Ichibot on their [GitLab page](https://gitlab.com/Ichimikichiki/ichibot-client-app/-/wikis/home).", color=0x673AB7), suppress=False)
 
 	except CancelledError: pass
 	except Exception:
