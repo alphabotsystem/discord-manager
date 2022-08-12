@@ -42,6 +42,7 @@ async def on_member_join(member):
 
 @tasks.loop(minutes=15.0)
 async def update_alpha_guild_roles(only=None):
+	if not environ["PRODUCTION_MODE"]: return
 	try:
 		if not await accountProperties.check_status(): return
 		accounts = await accountProperties.keys()
