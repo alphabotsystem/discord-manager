@@ -28,7 +28,7 @@ spec:
             memory: "105Mi"
             cpu: "10m"
         env: 
-          - name: PRODUCTION_MODE
+          - name: PRODUCTION
             value: "1"
           - name: DISCORD_MANAGER_TOKEN
             valueFrom:

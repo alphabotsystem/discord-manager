@@ -1,5 +1,5 @@
 from os import environ
-environ["PRODUCTION_MODE"] = environ["PRODUCTION_MODE"] if "PRODUCTION_MODE" in environ and environ["PRODUCTION_MODE"] else ""
+environ["PRODUCTION"] = environ["PRODUCTION"] if "PRODUCTION" in environ and environ["PRODUCTION"] else ""
 
 from time import time
 from random import randint
@@ -42,7 +42,7 @@ async def on_member_join(member):
 
 @tasks.loop(minutes=15.0)
 async def update_alpha_guild_roles(only=None):
-	if not environ["PRODUCTION_MODE"]: return
+	if not environ["PRODUCTION"]: return
 	try:
 		if not await accountProperties.check_status(): return
 		accounts = await accountProperties.keys()
@@ -85,7 +85,7 @@ async def update_alpha_guild_roles(only=None):
 	except CancelledError: pass
 	except Exception:
 		print(format_exc())
-		if environ["PRODUCTION_MODE"]: logging.report_exception()
+		if environ["PRODUCTION"]: logging.report_exception()
 
 
 # -------------------------
@@ -118,7 +118,7 @@ async def update_system_status():
 	except CancelledError: pass
 	except Exception:
 		print(format_exc())
-		if environ["PRODUCTION_MODE"]: logging.report_exception()
+		if environ["PRODUCTION"]: logging.report_exception()
 	updatingNickname = False
 
 
@@ -153,7 +153,7 @@ async def on_ready():
 	print("[Startup]: Alpha Manager is online")
 
 async def update_static_messages():
-	if not environ["PRODUCTION_MODE"]: return
+	if not environ["PRODUCTION"]: return
 	try:
 		rulesAndTosChannel = bot.get_channel(601160698310950914)
 		guildRulesMessage = await rulesAndTosChannel.fetch_message(850729258049601556)
@@ -168,7 +168,7 @@ async def update_static_messages():
 	except CancelledError: pass
 	except Exception:
 		print(format_exc())
-		if environ["PRODUCTION_MODE"]: logging.report_exception()
+		if environ["PRODUCTION"]: logging.report_exception()
 
 
 # -------------------------
