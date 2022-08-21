@@ -17,12 +17,8 @@ spec:
     spec:
       containers:
       - name: discord-manager
-        image: europe-west4-docker.pkg.dev/nlc-bot-36685/alpha-bot/discord-manager
+        image: us-central1-docker.pkg.dev/nlc-bot-36685/alpha-bot/discord-manager
         imagePullPolicy: Always
-        volumeMounts:
-          - name: google-cloud-auth
-            mountPath: /run/secrets/google-cloud-auth
-            readOnly: true
         resources:
           requests:
             memory: "105Mi"
@@ -35,10 +31,3 @@ spec:
               secretKeyRef:
                 name: alpha-credentials
                 key: DISCORD_MANAGER_TOKEN
-      volumes:
-        - name: google-cloud-auth
-          secret:
-            secretName: google-cloud-auth
-            items:
-              - key: gcloud_credentials.json
-                path: key
