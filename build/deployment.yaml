@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: discord-manager
-        image: us-central1-docker.pkg.dev/nlc-bot-36685/alpha-bot/discord-manager
+        image: us-central1-docker.pkg.dev/nlc-bot-36685/discord-manager/production
         imagePullPolicy: Always
         resources:
           requests:
