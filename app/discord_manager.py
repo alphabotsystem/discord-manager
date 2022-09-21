@@ -14,8 +14,6 @@ from discord.utils import get as getFromDiscord
 from google.cloud.firestore import AsyncClient as FirestoreAsyncClient
 from google.cloud.error_reporting import Client as ErrorReportingClient
 
-from helpers.utils import Utils
-
 from DatabaseConnector import DatabaseConnector
 
 
@@ -28,7 +26,6 @@ logging = ErrorReportingClient(service="discord_manager")
 # -------------------------
 
 intents = Intents.all()
-
 bot = Client(intents=intents, status=Status.invisible, activity=None)
 
 
