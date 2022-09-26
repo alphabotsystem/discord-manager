@@ -156,7 +156,7 @@ async def update_static_messages():
 		guildRulesMessage = await rulesAndTosChannel.fetch_message(850729258049601556)
 		termsOfServiceMessage = await rulesAndTosChannel.fetch_message(850729261216301086)
 		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of this official Alpha community must follow the community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alphabotsystem.com/community-rules) (last modified on January 31, 2020).", color=0x673AB7), suppress=False)
-		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alphabotsystem.com/terms-of-service) (last modified on March 6, 2020)\n[Privacy Policy](https://www.alphabotsystem.com/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
+		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alphabotsystem.com/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alphabotsystem.com/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
 
 		ichibotChannel = bot.get_channel(825460988660023326)
 		howtoMessage = await ichibotChannel.fetch_message(850764390290030603)
