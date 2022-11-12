@@ -8,7 +8,7 @@ from pytz import utc
 from asyncio import CancelledError, sleep
 from traceback import format_exc
 
-from discord import Client, Embed, Intents, Status
+from discord import Client, Embed, Intents, Status, ChannelType, PermissionOverwrite
 from discord.ext import tasks
 from discord.utils import get as getFromDiscord
 from google.cloud.firestore import AsyncClient as FirestoreAsyncClient
@@ -55,34 +55,65 @@ async def update_alpha_guild_roles(only=None):
 				properties = await accountProperties.get(accountId)
 				if properties is None: continue
 
-				if proRoles[2] not in member.roles:
-					try: await member.add_roles(proRoles[2])
+				if proRoles[3] not in member.roles:
+					try: await member.add_roles(proRoles[3])
 					except: pass
 
 				if len(properties["apiKeys"].keys()) != 0:
-					if proRoles[1] not in member.roles:
-						try: await member.add_roles(proRoles[1])
+					if proRoles[2] not in member.roles:
+						try: await member.add_roles(proRoles[2])
 						except: pass
-				elif proRoles[1] in member.roles:
-					try: await member.remove_roles(proRoles[1])
+				elif proRoles[2] in member.roles:
+					try: await member.remove_roles(proRoles[2])
 					except: pass
 
 				if len(properties["customer"].get("subscriptions", {}).keys()) > 0:
 					if proRoles[0] not in member.roles:
 						await member.add_roles(proRoles[0])
+					if properties["customer"]["subscriptions"].get("botLicense", 0) > 0:
+						await handle_bot_license(member, accountId)
 				elif proRoles[0] in member.roles:
 					try: await member.remove_roles(proRoles[0])
 					except: pass
 
-			elif proRoles[0] in member.roles or proRoles[2] in member.roles:
+			elif proRoles[0] in member.roles or proRoles[1] in member.roles or proRoles[3] in member.roles:
 				await sleep(0.4)
-				try: await member.remove_roles(proRoles[0], proRoles[2])
+				try: await member.remove_roles(proRoles[0], proRoles[1], proRoles[3])
 				except: pass
 
 	except CancelledError: pass
 	except Exception:
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
+
+async def handle_bot_license(member, accountId):
+	if proRoles[1] not in member.roles:
+		await member.add_roles(proRoles[1])
+
+	for channel in alphaGuild.channels:
+		if channel.type != ChannelType.text: continue
+		if channel.category_id == 1041086360062263438: continue
+		if channel.topic == accountId: return
+
+	categoryChannel = alphaGuild.get_channel(1041086360062263438)
+	newChannel = await alphaGuild.create_text_channel(
+		name=f"{member.name}-license",
+		topic=accountId,
+		category=categoryChannel,
+		overwrites={
+			alphaGuild.default_role: PermissionOverwrite(read_messages=False),
+			proRoles[1]: PermissionOverwrite(read_messages=False),
+			member: PermissionOverwrite(read_messages=True)
+		}
+	)
+	await newChannel.send(
+		content=member.mention,
+		embed=Embed(
+			title="Thank you for purchasing a bot license. Let's begin!",
+			description="To begin with the setup, please provide your bot's token in this channel. You can find your bot's token in the [Discord Developer Portal](https://discord.com/developers/applications). We can set up your bot for you as well, in which case you'll need to provide a name and a profile picture.\n\nIn addition to your bot's info, please post a permanent invite to the server in which the bot will be present. You can use the bot in multiple servers only if those servers are associated with each other.\n\nA team member will be with you as soon as possible to help you with further steps.",
+			color=0x9C27B0
+		)
+	)
 
 
 # -------------------------
@@ -133,10 +164,11 @@ async def on_ready():
 
 	alphaGuild = bot.get_guild(414498292655980583)
 	proRoles = [
-		getFromDiscord(alphaGuild.roles, id=484387309303758848), # Alpha Pro role
-		getFromDiscord(alphaGuild.roles, id=593768473277104148), # Ichibot role
-		getFromDiscord(alphaGuild.roles, id=647824289923334155), # Registered role
-		getFromDiscord(alphaGuild.roles, id=601524236464553984)  # Beta tester role
+		getFromDiscord(alphaGuild.roles, id=484387309303758848),  # Subscriber role
+		getFromDiscord(alphaGuild.roles, id=1041085930880127098), # Licensing role
+		getFromDiscord(alphaGuild.roles, id=593768473277104148),  # Ichibot role
+		getFromDiscord(alphaGuild.roles, id=647824289923334155),  # Registered role
+		getFromDiscord(alphaGuild.roles, id=601524236464553984)   # Beta tester role
 	]
 
 	await update_system_status()
