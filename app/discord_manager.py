@@ -92,7 +92,7 @@ async def handle_bot_license(member, accountId):
 
 	for channel in alphaGuild.channels:
 		if channel.type != ChannelType.text: continue
-		if channel.category_id == 1041086360062263438: continue
+		if channel.category_id != 1041086360062263438: continue
 		if channel.topic == accountId: return
 
 	categoryChannel = alphaGuild.get_channel(1041086360062263438)
@@ -178,6 +178,9 @@ async def on_ready():
 		update_alpha_guild_roles.start()
 	if not update_system_status.is_running():
 		update_system_status.start()
+
+	member = await alphaGuild.fetch_member(361916376069439490)
+	await handle_bot_license(member, "ebOX1w1N2DgMtXVN978fnL0FKCP2")
 
 	print("[Startup]: Alpha Manager is online")
 
