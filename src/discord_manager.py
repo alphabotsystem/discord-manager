@@ -150,7 +150,7 @@ async def update_system_status():
 		if environ["PRODUCTION"]: logging.report_exception()
 	updatingNickname = False
 
-@tasks.loop(minutes=60.0)
+@tasks.loop(hours=8.0)
 async def update_nickname_review():
 	channel = bot.get_channel(571786092077121536)
 	await channel.purge(limit=None, check=lambda m: True)
