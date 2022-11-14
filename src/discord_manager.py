@@ -170,6 +170,7 @@ class NicknameReview(View):
 
 	@button(label="Allow", style=ButtonStyle.green)
 	async def allow(self, interaction: Interaction, button: Button):
+		await interaction.message.delete()
 		await database.document("discord/settings").set({
 			"nicknames": {
 				self.guildId: {
@@ -177,10 +178,10 @@ class NicknameReview(View):
 				}
 			}
 		}, merge=True)
-		await interaction.message.delete()
 
 	@button(label="Deny", style=ButtonStyle.red)
 	async def deny(self, interaction: Interaction, button: Button):
+		await interaction.message.delete()
 		await database.document("discord/settings").set({
 			"nicknames": {
 				self.guildId: {
@@ -188,7 +189,6 @@ class NicknameReview(View):
 				}
 			}
 		}, merge=True)
-		await interaction.message.delete()
 
 
 # -------------------------
