@@ -222,9 +222,6 @@ async def on_ready():
 	if not update_nickname_review.is_running():
 		update_nickname_review.start()
 
-	member = await alphaGuild.fetch_member(361916376069439490)
-	await handle_bot_license(member, "ebOX1w1N2DgMtXVN978fnL0FKCP2")
-
 	print("[Startup]: Alpha Manager is online")
 
 async def update_static_messages():
