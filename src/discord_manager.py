@@ -8,7 +8,8 @@ from pytz import utc
 from asyncio import CancelledError, sleep
 from traceback import format_exc
 
-from discord import Client, Embed, Intents, Status, ChannelType, PermissionOverwrite
+from discord import Client, Embed, ButtonStyle, Interaction, Intents, Status, ChannelType, PermissionOverwrite
+from discord.ui import View, button, Button
 from discord.ext import tasks
 from discord.utils import get as getFromDiscord
 from google.cloud.firestore import AsyncClient as FirestoreAsyncClient
@@ -149,6 +150,46 @@ async def update_system_status():
 		if environ["PRODUCTION"]: logging.report_exception()
 	updatingNickname = False
 
+@tasks.loop(minutes=60.0)
+async def update_nickname_review():
+	channel = bot.get_channel(571786092077121536)
+	await channel.purge(limit=None, check=lambda m: True)
+
+	settings = await database.document("discord/settings").get()
+	nicknames = settings.to_dict()["nicknames"]
+
+	for guild, data in nicknames.items():
+		if data["allowed"] is None:
+			await channel.send(embed=Embed(title=f"{data['server name']} ({guild}): {data['nickname']}"), view=NicknameReview(guild))
+
+
+class NicknameReview(View):
+	def __init__(self, guildId):
+		super().__init__(timeout=None)
+		self.guildId = guildId
+
+	@button(label="Allow", style=ButtonStyle.green)
+	async def allow(self, interaction: Interaction, button: Button):
+		await database.document("discord/settings").set({
+			"nicknames": {
+				self.guildId: {
+					"allowed": True
+				}
+			}
+		}, merge=True)
+		await interaction.message.delete()
+
+	@button(label="Deny", style=ButtonStyle.red)
+	async def deny(self, interaction: Interaction, button: Button):
+		await database.document("discord/settings").set({
+			"nicknames": {
+				self.guildId: {
+					"allowed": False
+				}
+			}
+		}, merge=True)
+		await interaction.message.delete()
+
 
 # -------------------------
 # Startup
@@ -178,6 +219,8 @@ async def on_ready():
 		update_alpha_guild_roles.start()
 	if not update_system_status.is_running():
 		update_system_status.start()
+	if not update_nickname_review.is_running():
+		update_nickname_review.start()
 
 	member = await alphaGuild.fetch_member(361916376069439490)
 	await handle_bot_license(member, "ebOX1w1N2DgMtXVN978fnL0FKCP2")
