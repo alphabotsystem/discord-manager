@@ -223,7 +223,9 @@ async def show_join_date(interaction: Interaction, member: Member):
 		else:
 			slots = ""
 			for sub, settings in customer['slots'].items():
-				if sub == "satellites":
+				if len(settings.keys()) == 0:
+					slots += f"{subMap.get(sub, sub)}: none\n"
+				elif sub == "satellites":
 					satellites = sorted([f"{k} ({len(v['added'])})" for k, v in settings.items()])
 					slots += f"{subMap.get(sub, sub)}: ```{', '.join(satellites)}```\n"
 				else:
