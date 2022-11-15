@@ -217,18 +217,24 @@ async def show_join_date(interaction: Interaction, member: Member):
 		apiKeys = sorted(properties.pop("apiKeys").keys())
 		subscriptions = [subMap.get(e, e) for e in sorted(customer["subscriptions"].keys())]
 
-		slots = ""
-		for sub, settings in customer['slots'].items():
-			if sub == "satellites":
-				satellites = sorted([f"{k} ({len(v['added'])})" for k, v in settings.items()])
-				slots += f"{subMap.get(sub, sub)}: ```{', '.join(satellites)}```\n"
-			else:
-				slots += f"{subMap.get(sub, sub)}: ```{', '.join(sorted(settings.keys()))}```\n"
+		if len(subscriptions) == 0:
+			details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```"
+
+		else:
+			slots = ""
+			for sub, settings in customer['slots'].items():
+				if sub == "satellites":
+					satellites = sorted([f"{k} ({len(v['added'])})" for k, v in settings.items()])
+					slots += f"{subMap.get(sub, sub)}: ```{', '.join(satellites)}```\n"
+				else:
+					slots += f"{subMap.get(sub, sub)}: ```{', '.join(sorted(settings.keys()))}```\n"
+
+			details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{' '.join(subscriptions)}```\nSlots: {slots}"
 
 		await interaction.response.send_message(
 			embed=Embed(
 				title=f"User details for {member.name}",
-				description=f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{' '.join(subscriptions)}```\nSlots: {slots}",
+				description=details,
 			),
 			ephemeral=True
 		)
