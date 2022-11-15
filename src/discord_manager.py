@@ -7,8 +7,9 @@ from datetime import datetime, timedelta
 from pytz import utc
 from asyncio import CancelledError, sleep
 from traceback import format_exc
+from json import dumps
 
-from discord import Client, Embed, ButtonStyle, Interaction, Intents, Status, ChannelType, PermissionOverwrite
+from discord import app_commands, Client, Embed, ButtonStyle, Interaction, Member, Intents, Status, ChannelType, PermissionOverwrite
 from discord.ui import View, button, Button
 from discord.ext import tasks
 from discord.utils import get as getFromDiscord
@@ -28,6 +29,7 @@ logging = ErrorReportingClient(service="discord_manager")
 
 intents = Intents.all()
 bot = Client(intents=intents, status=Status.invisible, activity=None)
+tree = app_commands.CommandTree(bot)
 
 
 # -------------------------
@@ -192,6 +194,28 @@ class NicknameReview(View):
 
 
 # -------------------------
+# Commands
+# -------------------------
+
+@tree.context_menu(name="Show Details")
+async def show_join_date(interaction: Interaction, member: Member):
+	if interaction.user.id == 361916376069439490:
+		properties = await accountProperties.get(member.id)
+		await interaction.response.send_message(
+			embed=Embed(
+				title=f"User details for {member.name}",
+				description=dumps(properties, indent=2),
+			),
+			ephemeral=True
+		)
+	else:
+		await interaction.response.send_message(
+			embed=Embed(title="You are not authorized to use this command."),
+			ephemeral=True
+		)
+
+
+# -------------------------
 # Startup
 # -------------------------
 
@@ -221,6 +245,8 @@ async def on_ready():
 		update_system_status.start()
 	if not update_nickname_review.is_running():
 		update_nickname_review.start()
+
+	await tree.sync()
 
 	print("[Startup]: Alpha Manager is online")
 
