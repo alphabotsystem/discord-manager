@@ -5,7 +5,7 @@ from time import time
 from random import randint
 from datetime import datetime, timedelta
 from pytz import utc
-from asyncio import CancelledError, sleep
+from asyncio import CancelledError, sleep, gather
 from traceback import format_exc
 from json import dumps
 
@@ -200,11 +200,35 @@ class NicknameReview(View):
 @tree.context_menu(name="Show Details")
 async def show_join_date(interaction: Interaction, member: Member):
 	if interaction.user.id == 361916376069439490:
-		properties = await accountProperties.get(member.id)
+		[accountId, properties] = await gather(
+			accountProperties.match(member.id),
+			accountProperties.get(member.id)
+		)
+
+		subMap = {
+			"advancedCharting": "Advanced Charting",
+			"botLicense": "Bot License",
+			"priceAlerts": "Price Alerts",
+			"satellites": "Price Satellite Bots",
+			"scheduledPosting": "Scheduled Posting"
+		}
+
+		customer = properties.pop("customer")
+		apiKeys = sorted(properties.pop("apiKeys").keys())
+		subscriptions = [subMap.get(e, e) for e in sorted(customer["subscriptions"].keys())]
+
+		slots = ""
+		for sub, settings in customer['slots'].items():
+			if sub == "satellites":
+				satellites = sorted([f"{k} ({len(v['added'])})" for k, v in settings.items()])
+				slots += f"{subMap.get(sub, sub)}: ```{', '.join(satellites)}```\n"
+			else:
+				slots += f"{subMap.get(sub, sub)}: ```{', '.join(sorted(settings.keys()))}```\n"
+
 		await interaction.response.send_message(
 			embed=Embed(
 				title=f"User details for {member.name}",
-				description=f"```{dumps(properties, indent=2)}```",
+				description=f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{' '.join(subscriptions)}```\nSlots: {slots}",
 			),
 			ephemeral=True
 		)
