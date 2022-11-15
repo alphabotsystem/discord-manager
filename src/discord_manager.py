@@ -204,7 +204,7 @@ async def show_join_date(interaction: Interaction, member: Member):
 		await interaction.response.send_message(
 			embed=Embed(
 				title=f"User details for {member.name}",
-				description=dumps(properties, indent=2),
+				description=f"```{dumps(properties, indent=2)}```",
 			),
 			ephemeral=True
 		)
