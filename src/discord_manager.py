@@ -106,7 +106,7 @@ async def handle_bot_license(member, accountId):
 		overwrites={
 			alphaGuild.default_role: PermissionOverwrite(read_messages=False),
 			proRoles[1]: PermissionOverwrite(read_messages=False),
-			member: PermissionOverwrite(read_messages=True)
+			member: PermissionOverwrite(read_messages=True, send_messages=True)
 		}
 	)
 	await newChannel.send(
