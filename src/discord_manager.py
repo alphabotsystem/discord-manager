@@ -231,7 +231,7 @@ async def show_join_date(interaction: Interaction, member: Member):
 				else:
 					slots += f"{subMap.get(sub, sub)}: ```{', '.join(sorted(settings.keys()))}```\n"
 
-			details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{' '.join(subscriptions)}```\nSlots: {slots}"
+			details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{', '.join(subscriptions)}```\nSlots: {slots}"
 
 		await interaction.response.send_message(
 			embed=Embed(

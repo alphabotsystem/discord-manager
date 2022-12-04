@@ -15,4 +15,4 @@ RUN rm -r ./dependencies
 COPY ./src ./
 
 # Run
-ENTRYPOINT ["python", "discord_manager.py"]
+ENTRYPOINT ["python", "-u", "discord_manager.py"]
