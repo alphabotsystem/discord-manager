@@ -40,6 +40,17 @@ tree = app_commands.CommandTree(bot)
 async def on_member_join(member):
 	await update_alpha_guild_roles(only=member.id)
 
+@bot.event
+async def on_member_leave(member):
+	match = await accountProperties.match(member.id)
+	if match is not None:
+		for channel in alphaGuild.channels:
+			if channel.type != ChannelType.text: continue
+			if channel.category_id != 1041086360062263438: continue
+			if channel.topic == match:
+				await channel.send(content="Customer has left the server.")
+				return
+
 @tasks.loop(minutes=15.0)
 async def update_alpha_guild_roles(only=None):
 	if not environ["PRODUCTION"]: return
@@ -75,6 +86,8 @@ async def update_alpha_guild_roles(only=None):
 						await member.add_roles(proRoles[0])
 					if properties["customer"]["subscriptions"].get("botLicense", 0) > 0:
 						await handle_bot_license(member, accountId)
+					elif proRoles[1] in member.roles:
+						await handle_bot_license(member, accountId, add=False)
 				elif proRoles[0] in member.roles:
 					try: await member.remove_roles(proRoles[0])
 					except: pass
@@ -89,34 +102,51 @@ async def update_alpha_guild_roles(only=None):
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 
-async def handle_bot_license(member, accountId):
-	if proRoles[1] not in member.roles:
-		await member.add_roles(proRoles[1])
+async def handle_bot_license(member, accountId, add=True):
+	if add:
+		if proRoles[1] not in member.roles:
+			await member.add_roles(proRoles[1])
 
-	for channel in alphaGuild.channels:
-		if channel.type != ChannelType.text: continue
-		if channel.category_id != 1041086360062263438: continue
-		if channel.topic == accountId: return
+		for channel in alphaGuild.channels:
+			if channel.type != ChannelType.text: continue
+			if channel.category_id != 1041086360062263438: continue
+			if channel.topic == accountId: return
 
-	categoryChannel = alphaGuild.get_channel(1041086360062263438)
-	newChannel = await alphaGuild.create_text_channel(
-		name=f"{member.name}-license",
-		topic=accountId,
-		category=categoryChannel,
-		overwrites={
-			alphaGuild.default_role: PermissionOverwrite(read_messages=False),
-			proRoles[1]: PermissionOverwrite(read_messages=False),
-			member: PermissionOverwrite(read_messages=True, send_messages=True)
-		}
-	)
-	await newChannel.send(
-		content=member.mention,
-		embed=Embed(
-			title="Thank you for purchasing a bot license. Let's begin!",
-			description="To begin with the setup, please provide your bot's token in this channel. You can find your bot's token in the [Discord Developer Portal](https://discord.com/developers/applications). We can set up your bot for you as well, in which case you'll need to provide a name and a profile picture.\n\nIn addition to your bot's info, please post a permanent invite to the server in which the bot will be present. You can use the bot in multiple servers only if those servers are associated with each other.\n\nA team member will be with you as soon as possible to help you with further steps.",
-			color=0x9C27B0
+		categoryChannel = alphaGuild.get_channel(1041086360062263438)
+		newChannel = await alphaGuild.create_text_channel(
+			name=f"{member.name}-license",
+			topic=accountId,
+			category=categoryChannel,
+			overwrites={
+				alphaGuild.default_role: PermissionOverwrite(read_messages=False),
+				proRoles[1]: PermissionOverwrite(read_messages=False),
+				member: PermissionOverwrite(read_messages=True, send_messages=True)
+			}
 		)
-	)
+		await newChannel.send(
+			content=member.mention,
+			embed=Embed(
+				title="Thank you for purchasing a bot license. Let's begin!",
+				description="To begin with the setup, please provide your bot's token in this channel. You can find your bot's token in the [Discord Developer Portal](https://discord.com/developers/applications). We can set up your bot for you as well, in which case you'll need to provide a name and a profile picture.\n\nIn addition to your bot's info, please post a permanent invite to the server in which the bot will be present. You can use the bot in multiple servers only if those servers are associated with each other.\n\nA team member will be with you as soon as possible to help you with further steps.",
+				color=0x9C27B0
+			)
+		)
+
+	else:
+		try: await member.remove_roles(proRoles[1])
+		except: pass
+
+		for channel in alphaGuild.channels:
+			if channel.type != ChannelType.text: continue
+			if channel.category_id != 1041086360062263438: continue
+			if channel.topic == accountId:
+				newChannel = await alphaGuild.edit(
+					overwrites={
+						member: PermissionOverwrite(read_messages=False, send_messages=False)
+					}
+				)
+				await channel.send(content="Customer has canceled the subscription.")
+				return
 
 
 # -------------------------
@@ -244,6 +274,20 @@ async def show_join_date(interaction: Interaction, member: Member):
 		await interaction.response.send_message(
 			embed=Embed(title="You are not authorized to use this command."),
 			ephemeral=True
+		)
+
+
+# -------------------------
+# Instant help
+# -------------------------
+
+@bot.event
+async def on_message(message):
+	if message.clean_content.startswith("/"):
+		await message.channel.send(
+			content="Looks like you're trying to use slash commands. Here's a video to help you out! https://www.youtube.com/watch?v=4XxcpBxSCiU",
+			reference=message,
+			mention_author=True
 		)
 
 
