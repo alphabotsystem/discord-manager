@@ -21,9 +21,9 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: "83Mi"
+            memory: "105Mi"
             cpu: "10m"
-        env: 
+        env:
           - name: PRODUCTION
             value: "1"
           - name: DISCORD_MANAGER_TOKEN
