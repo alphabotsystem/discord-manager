@@ -324,7 +324,7 @@ async def on_ready():
 
 	await tree.sync()
 
-	print("[Startup]: Alpha Manager is online")
+	print("[Startup]: Alpha.bot Manager is online")
 
 async def update_static_messages():
 	if not environ["PRODUCTION"]: return
@@ -332,8 +332,8 @@ async def update_static_messages():
 		rulesAndTosChannel = bot.get_channel(601160698310950914)
 		guildRulesMessage = await rulesAndTosChannel.fetch_message(850729258049601556)
 		termsOfServiceMessage = await rulesAndTosChannel.fetch_message(850729261216301086)
-		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of this official Alpha community must follow the community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on January 31, 2020).", color=0x673AB7), suppress=False)
-		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
+		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of the official Alpha.bot community must follow the community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on January 31, 2020).", color=0x673AB7), suppress=False)
+		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha.bot branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
 
 	except CancelledError: pass
 	except Exception:
