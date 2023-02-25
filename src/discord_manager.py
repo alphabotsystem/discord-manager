@@ -133,18 +133,13 @@ async def handle_bot_license(member, accountId, add=True):
 		)
 
 	else:
-		try: await member.remove_roles(proRoles[1])
-		except: pass
+		if proRoles[1] in member.roles:
+			await member.remove_roles(proRoles[1])
 
 		for channel in alphaGuild.channels:
 			if channel.type != ChannelType.text: continue
 			if channel.category_id != 1041086360062263438: continue
 			if channel.topic == accountId:
-				newChannel = await alphaGuild.edit(
-					overwrites={
-						member: PermissionOverwrite(read_messages=False, send_messages=False)
-					}
-				)
 				await channel.send(content="Customer has canceled the subscription.")
 				return
 
