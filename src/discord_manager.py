@@ -40,17 +40,6 @@ tree = app_commands.CommandTree(bot)
 async def on_member_join(member):
 	await update_alpha_guild_roles(only=member.id)
 
-@bot.event
-async def on_member_leave(member):
-	match = await accountProperties.match(member.id)
-	if match is not None:
-		for channel in alphaGuild.channels:
-			if channel.type != ChannelType.text: continue
-			if channel.category_id != 1041086360062263438: continue
-			if channel.topic == match:
-				await channel.send(content="Customer has left the server.")
-				return
-
 @tasks.loop(minutes=15.0)
 async def update_alpha_guild_roles(only=None):
 	if not environ["PRODUCTION"]: return
