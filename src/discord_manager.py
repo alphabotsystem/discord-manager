@@ -66,7 +66,6 @@ async def update_alpha_guild_roles(only=None):
 			accountId = matches.get(str(member.id))
 
 			if accountId is not None:
-				await sleep(0.4)
 				properties = await accountProperties.get(accountId)
 				if properties is None: continue
 
@@ -94,7 +93,6 @@ async def update_alpha_guild_roles(only=None):
 					except: pass
 
 			elif proRoles[0] in member.roles or proRoles[1] in member.roles or proRoles[3] in member.roles:
-				await sleep(0.4)
 				try: await member.remove_roles(proRoles[0], proRoles[1], proRoles[3])
 				except: pass
 
