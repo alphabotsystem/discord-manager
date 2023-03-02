@@ -271,6 +271,16 @@ async def show_join_date(interaction: Interaction, member: Member):
 			ephemeral=True
 		)
 
+@tree.context_menu(name="Refresh roles")
+async def show_join_date(interaction: Interaction, member: Member):
+	if interaction.user.id == 361916376069439490:
+		await update_alpha_guild_roles(only=member.id)
+	else:
+		await interaction.response.send_message(
+			embed=Embed(title="You are not authorized to use this command."),
+			ephemeral=True
+		)
+
 
 # -------------------------
 # Instant help
