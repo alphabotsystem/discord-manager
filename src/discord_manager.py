@@ -40,7 +40,7 @@ tree = app_commands.CommandTree(bot)
 async def on_member_join(member):
 	await update_alpha_guild_roles(only=member.id)
 
-@tasks.loop(minutes=15.0)
+@tasks.loop(minutes=5.0)
 async def update_alpha_guild_roles(only=None):
 	if not environ["PRODUCTION"]: return
 	start = time()
