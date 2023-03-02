@@ -54,6 +54,7 @@ async def on_member_leave(member):
 @tasks.loop(minutes=15.0)
 async def update_alpha_guild_roles(only=None):
 	if not environ["PRODUCTION"]: return
+	start = time()
 	try:
 		if not await accountProperties.check_status(): return
 		accounts = await accountProperties.keys()
@@ -101,6 +102,8 @@ async def update_alpha_guild_roles(only=None):
 	except Exception:
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
+	finally:
+		print(f"Updated roles in {round(time() - start, 2)} seconds.")
 
 async def handle_bot_license(member, accountId, add=True):
 	if add:
@@ -294,6 +297,8 @@ async def on_message(message):
 			reference=message,
 			mention_author=True
 		)
+	elif "<@401328409499664394>" in message.content:
+		await message.channel.send(content="<@361916376069439490>")
 
 
 # -------------------------
