@@ -226,19 +226,18 @@ class PortalBeta(View):
 beta = app_commands.Group(name="beta", description="Beta role management")
 
 @beta.command(name="purge", description="Remove the beta role from everyone")
-@app_commands.default_permissions(administrator=True)
 async def purge_beta(interaction: Interaction):
 	try:
 		for member in alphaGuild.members:
 			if roles[4] in member.roles:
 				try: await member.remove_roles(roles[4])
 				except: pass
+		await interaction.response.send_message(content="Done!", ephemeral=True)
 	except:
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 
 @beta.command(name="portal", description="Open the portal to the beta role")
-@app_commands.default_permissions(administrator=True)
 async def portal_beta(interaction: Interaction):
 	try:
 		await interaction.response.send_message(
@@ -300,6 +299,10 @@ async def show_join_date(interaction: Interaction, member: Member):
 @app_commands.default_permissions(administrator=True)
 async def refresh_roles(interaction: Interaction, member: Member):
 	await update_alpha_guild_roles(only=member.id)
+	await interaction.response.send_message(
+		content=f"Roles for {member.name} have been refreshed.",
+		ephemeral=True
+	)
 
 
 # -------------------------
