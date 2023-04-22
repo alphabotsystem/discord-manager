@@ -207,69 +207,99 @@ class NicknameReview(View):
 			}
 		}, merge=True)
 
+class PortalBeta(View):
+	def __init__(self):
+		super().__init__(timeout=None)
+
+	@button(label="I'm in", style=ButtonStyle.primary)
+	async def allow(self, interaction: Interaction, button: Button):
+		await interaction.message.delete()
+		if interaction.user is not None:
+			try: await interaction.user.add_roles(roles[4])
+			except: pass
+
 
 # -------------------------
 # Commands
 # -------------------------
 
+beta = app_commands.Group(name="beta", description="Beta role management")
+
+@beta.command(name="purge", description="Remove the beta role from everyone")
+@app_commands.default_permissions(administrator=True)
+async def purge_beta(interaction: Interaction):
+	try:
+		for member in alphaGuild.members:
+			if roles[4] in member.roles:
+				try: await member.remove_roles(roles[4])
+				except: pass
+	except:
+		print(format_exc())
+		if environ["PRODUCTION"]: logging.report_exception()
+
+@beta.command(name="portal", description="Open the portal to the beta role")
+@app_commands.default_permissions(administrator=True)
+async def portal_beta(interaction: Interaction):
+	try:
+		await interaction.response.send_message(
+			content="Hey there, want to test out something new?",
+			view=PortalBeta()
+		)
+	except:
+		print(format_exc())
+		if environ["PRODUCTION"]: logging.report_exception()
+
+tree.add_command(beta)
+
 @tree.context_menu(name="Show Details")
+@app_commands.default_permissions(administrator=True)
 async def show_join_date(interaction: Interaction, member: Member):
-	if interaction.user.id == 361916376069439490:
-		[accountId, properties] = await gather(
-			accountProperties.match(member.id),
-			accountProperties.get(member.id)
-		)
+	[accountId, properties] = await gather(
+		accountProperties.match(member.id),
+		accountProperties.get(member.id)
+	)
 
-		subMap = {
-			"advancedCharting": "Advanced Charting",
-			"botLicense": "Bot License",
-			"priceAlerts": "Price Alerts",
-			"satellites": "Price Satellite Bots",
-			"scheduledPosting": "Scheduled Posting"
-		}
+	subMap = {
+		"advancedCharting": "Advanced Charting",
+		"botLicense": "Bot License",
+		"priceAlerts": "Price Alerts",
+		"satellites": "Price Satellite Bots",
+		"scheduledPosting": "Scheduled Posting",
+		"tradingviewLayouts": "TradingView Layouts"
+	}
 
-		customer = properties.pop("customer")
-		apiKeys = sorted(properties.pop("apiKeys").keys())
-		subscriptions = [subMap.get(e, e) for e in sorted(customer["subscriptions"].keys())]
+	customer = properties.pop("customer")
+	apiKeys = sorted(properties.pop("apiKeys").keys())
+	subscriptions = [subMap.get(e, e) for e in sorted(customer["subscriptions"].keys())]
 
-		if len(subscriptions) == 0:
-			details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```"
+	if len(subscriptions) == 0:
+		details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```"
 
-		else:
-			slots = ""
-			for sub, settings in customer['slots'].items():
-				if len(settings.keys()) == 0:
-					slots += f"{subMap.get(sub, sub)}: none\n"
-				elif sub == "satellites":
-					satellites = sorted([f"{k} ({len(v['added'])})" for k, v in settings.items()])
-					slots += f"{subMap.get(sub, sub)}: ```{', '.join(satellites)}```\n"
-				else:
-					slots += f"{subMap.get(sub, sub)}: ```{', '.join(sorted(settings.keys()))}```\n"
-
-			details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{', '.join(subscriptions)}```\n{slots}"
-
-		await interaction.response.send_message(
-			embed=Embed(
-				title=f"User details for {member.name}",
-				description=details,
-			),
-			ephemeral=True
-		)
 	else:
-		await interaction.response.send_message(
-			embed=Embed(title="You are not authorized to use this command."),
-			ephemeral=True
-		)
+		slots = ""
+		for sub, settings in customer['slots'].items():
+			if len(settings.keys()) == 0:
+				slots += f"{subMap.get(sub, sub)}: none\n"
+			elif sub == "satellites":
+				satellites = sorted([f"{k} ({len(v['added'])})" for k, v in settings.items()])
+				slots += f"{subMap.get(sub, sub)}: ```{', '.join(satellites)}```\n"
+			else:
+				slots += f"{subMap.get(sub, sub)}: ```{', '.join(sorted(settings.keys()))}```\n"
+
+		details = f"Account UID: ```{accountId}```\nStripe ID: ```{customer['stripeId']}```\nSubscriptions: ```{', '.join(subscriptions)}```\n{slots}"
+
+	await interaction.response.send_message(
+		embed=Embed(
+			title=f"User details for {member.name}",
+			description=details,
+		),
+		ephemeral=True
+	)
 
 @tree.context_menu(name="Refresh roles")
-async def show_join_date(interaction: Interaction, member: Member):
-	if interaction.user.id == 361916376069439490:
-		await update_alpha_guild_roles(only=member.id)
-	else:
-		await interaction.response.send_message(
-			embed=Embed(title="You are not authorized to use this command."),
-			ephemeral=True
-		)
+@app_commands.default_permissions(administrator=True)
+async def refresh_roles(interaction: Interaction, member: Member):
+	await update_alpha_guild_roles(only=member.id)
 
 
 # -------------------------
