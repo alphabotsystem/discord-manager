@@ -223,7 +223,22 @@ class PortalBeta(View):
 # Commands
 # -------------------------
 
-beta = app_commands.Group(name="beta", description="Beta role management")
+message = app_commands.Group(name="messages", description="Message management", guild_only=True)
+beta = app_commands.Group(name="beta", description="Beta role management", guild_only=True)
+
+@message.command(name="purge", description="Purge messages from a channel")
+@app_commands.describe(
+    limit="The number of messages to delete",
+	user="The user to delete messages from"
+)
+async def purge_beta(interaction: Interaction, limit: Optional[int] = None, user: Optional[Member] = None):
+	try:
+		await interaction.response.defer(ephemeral=True)
+		await interaction.channel.purge(limit=limit, check=lambda m: user is None or m.author == user)
+		await interaction.followup.send(content="Done!", ephemeral=True)
+	except:
+		print(format_exc())
+		if environ["PRODUCTION"]: logging.report_exception()
 
 @beta.command(name="purge", description="Remove the beta role from everyone")
 async def purge_beta(interaction: Interaction):
@@ -248,6 +263,7 @@ async def portal_beta(interaction: Interaction):
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 
+tree.add_command(message)
 tree.add_command(beta)
 
 @tree.context_menu(name="Show Details")
