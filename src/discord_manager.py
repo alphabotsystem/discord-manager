@@ -1,6 +1,7 @@
 from os import environ
 environ["PRODUCTION"] = environ["PRODUCTION"] if "PRODUCTION" in environ and environ["PRODUCTION"] else ""
 
+from typing import Optional
 from time import time
 from random import randint
 from datetime import datetime, timedelta
