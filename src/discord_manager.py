@@ -218,6 +218,7 @@ class PortalBeta(View):
 		if interaction.user is not None:
 			try: await interaction.user.add_roles(self.role)
 			except: pass
+		await interaction.followup.send(content="You're in!", ephemeral=True)
 
 
 # -------------------------
