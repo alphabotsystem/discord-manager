@@ -10,7 +10,7 @@ from asyncio import CancelledError, sleep, gather
 from traceback import format_exc
 from json import dumps
 
-from discord import app_commands, Client, Embed, ButtonStyle, Interaction, Member, Intents, Status, ChannelType, PermissionOverwrite
+from discord import app_commands, Client, Embed, ButtonStyle, Interaction, Member, Role, Intents, Status, ChannelType, PermissionOverwrite
 from discord.ui import View, button, Button
 from discord.ext import tasks
 from discord.utils import get as getFromDiscord
@@ -209,14 +209,15 @@ class NicknameReview(View):
 		}, merge=True)
 
 class PortalBeta(View):
-	def __init__(self):
+	def __init__(self, role):
+		self.role = role
 		super().__init__(timeout=None)
 
 	@button(label="I'm in", style=ButtonStyle.primary)
 	async def allow(self, interaction: Interaction, button: Button):
 		await interaction.message.delete()
 		if interaction.user is not None:
-			try: await interaction.user.add_roles(roles[4])
+			try: await interaction.user.add_roles(self.role)
 			except: pass
 
 
@@ -242,11 +243,14 @@ async def purge_beta(interaction: Interaction, limit: Optional[int] = None, user
 		if environ["PRODUCTION"]: logging.report_exception()
 
 @beta.command(name="purge", description="Remove the beta role from everyone")
-async def purge_beta(interaction: Interaction):
+@app_commands.describe(
+	role="The beta role"
+)
+async def purge_beta(interaction: Interaction, role: Role):
 	try:
 		for member in alphaGuild.members:
-			if roles[4] in member.roles:
-				try: await member.remove_roles(roles[4])
+			if role in member.roles:
+				try: await member.remove_roles(role)
 				except: pass
 		await interaction.response.send_message(content="Done!", ephemeral=True)
 	except:
@@ -254,11 +258,14 @@ async def purge_beta(interaction: Interaction):
 		if environ["PRODUCTION"]: logging.report_exception()
 
 @beta.command(name="portal", description="Open the portal to the beta role")
-async def portal_beta(interaction: Interaction):
+@app_commands.describe(
+	role="The beta role"
+)
+async def portal_beta(interaction: Interaction, role: Role):
 	try:
 		await interaction.response.send_message(
 			content="Hey there, want to test out something new?",
-			view=PortalBeta()
+			view=PortalBeta(role)
 		)
 	except:
 		print(format_exc())
@@ -356,7 +363,6 @@ async def on_ready():
 		getFromDiscord(alphaGuild.roles, id=1041085930880127098), # Licensing role
 		getFromDiscord(alphaGuild.roles, id=593768473277104148),  # Ichibot role
 		getFromDiscord(alphaGuild.roles, id=647824289923334155),  # Registered role
-		getFromDiscord(alphaGuild.roles, id=601524236464553984)   # Beta tester role
 	]
 
 	await update_system_status()
