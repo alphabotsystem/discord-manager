@@ -215,7 +215,6 @@ class PortalBeta(View):
 
 	@button(label="I'm in", style=ButtonStyle.primary)
 	async def allow(self, interaction: Interaction, button: Button):
-		await interaction.message.delete()
 		if interaction.user is not None:
 			try: await interaction.user.add_roles(self.role)
 			except: pass
