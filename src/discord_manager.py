@@ -282,6 +282,13 @@ async def show_join_date(interaction: Interaction, member: Member):
 		accountProperties.get(member.id)
 	)
 
+	if "customer" not in properties:
+		await interaction.response.send_message(
+			embed=Embed(title=f"No user info"),
+			ephemeral=True
+		)
+		return
+
 	subMap = {
 		"advancedCharting": "Advanced Charting",
 		"botLicense": "Bot License",
