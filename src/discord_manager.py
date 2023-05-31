@@ -87,7 +87,7 @@ async def update_alpha_guild_roles(only=None):
 				except: pass
 
 	except CancelledError: pass
-	except Exception:
+	except:
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 	finally:
@@ -163,7 +163,7 @@ async def update_system_status():
 			await statsMessage.edit(content=None, embed=statisticsEmbed, suppress=False)
 
 	except CancelledError: pass
-	except Exception:
+	except:
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 	updatingNickname = False
@@ -396,7 +396,7 @@ async def update_static_messages():
 		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha.bot branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
 
 	except CancelledError: pass
-	except Exception:
+	except:
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 
