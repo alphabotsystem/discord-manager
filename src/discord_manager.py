@@ -47,6 +47,7 @@ async def update_alpha_guild_roles(only=None):
 	try:
 		if not await accountProperties.check_status(): return
 		accounts = await accountProperties.keys()
+		if len(accounts.keys()) == 0: return
 		matches = {value: key for key, value in accounts.items()}
 
 		for member in alphaGuild.members:
@@ -275,7 +276,7 @@ tree.add_command(beta)
 
 @tree.context_menu(name="Show Details")
 @app_commands.default_permissions(administrator=True)
-async def show_join_date(interaction: Interaction, member: Member):
+async def show_details(interaction: Interaction, member: Member):
 	[accountId, properties] = await gather(
 		accountProperties.match(member.id),
 		accountProperties.get(member.id)
