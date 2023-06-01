@@ -4,8 +4,7 @@ environ["PRODUCTION"] = environ["PRODUCTION"] if "PRODUCTION" in environ and env
 from typing import Optional
 from time import time
 from random import randint
-from datetime import datetime, timedelta
-from pytz import utc
+from datetime import datetime, timedelta, timezone
 from asyncio import CancelledError, sleep, gather
 from traceback import format_exc
 from json import dumps
@@ -142,7 +141,7 @@ async def handle_bot_license(member, accountId, add=True):
 @tasks.loop(minutes=1.0)
 async def update_system_status():
 	try:
-		t = datetime.now().astimezone(utc)
+		t = datetime.now().astimezone(timezone.utc)
 		statistics = await database.document("discord/statistics").get()
 		statistics = statistics.to_dict()["{}-{:02d}".format(t.year, t.month)]
 		t2 = t + timedelta(minutes=5)
