@@ -348,9 +348,24 @@ async def on_message(message):
 			reference=message,
 			mention_author=True
 		)
+
 	elif "<@401328409499664394>" in message.content:
 		await message.channel.send(content="<@361916376069439490>")
 
+	elif message.channel.id in TEST_CHANNELS:
+		lastTime = lastHeadsup.get(message.channel.id, 0)
+		lastHeadsup[message.channel.id] = time()
+
+		if message.author.id == 361916376069439490:
+			return
+		if lastTime + 5 * 60 > time():
+			return
+
+		await message.channel.send(
+			content="Hey there, this channel is intended for testing purposes. You can use <#1019642541374705787>, if you're looking for help, or <#480464108794281994> if you just want to chat.",
+			reference=message,
+			mention_author=True
+		)
 
 # -------------------------
 # Startup
@@ -359,6 +374,9 @@ async def on_message(message):
 accountProperties = DatabaseConnector(mode="account")
 alphaGuild = None
 proRoles = None
+
+TEST_CHANNELS = [814143168996048936, 417784977841979402]
+lastHeadsup = {}
 
 @bot.event
 async def on_ready():
