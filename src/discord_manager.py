@@ -342,6 +342,9 @@ async def refresh_roles(interaction: Interaction, member: Member):
 
 @bot.event
 async def on_message(message):
+	if message.author.id in BOTS:
+		return
+
 	if message.clean_content.startswith("/"):
 		await message.channel.send(
 			content="Looks like you're trying to use slash commands. Here's a video to help you out! https://www.youtube.com/watch?v=4XxcpBxSCiU",
@@ -375,6 +378,7 @@ accountProperties = DatabaseConnector(mode="account")
 alphaGuild = None
 proRoles = None
 
+BOTS = [401328409499664394, 739420701211099178]
 TEST_CHANNELS = [814143168996048936, 417784977841979402]
 lastHeadsup = {}
 
