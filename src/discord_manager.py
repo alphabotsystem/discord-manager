@@ -27,6 +27,8 @@ logging = ErrorReportingClient(service="discord_manager")
 # Initialization
 # -------------------------
 
+ALPHA_GUILD_ID = 414498292655980583
+
 intents = Intents.all()
 bot = Client(intents=intents, status=Status.invisible, activity=None)
 tree = app_commands.CommandTree(bot)
@@ -38,6 +40,7 @@ tree = app_commands.CommandTree(bot)
 
 @bot.event
 async def on_member_join(member):
+	if member.guild.id != ALPHA_GUILD_ID: return
 	await update_alpha_guild_roles(only=member.id)
 
 @tasks.loop(minutes=5.0)
@@ -386,7 +389,7 @@ lastHeadsup = {}
 async def on_ready():
 	global alphaGuild, proRoles
 
-	alphaGuild = bot.get_guild(414498292655980583)
+	alphaGuild = bot.get_guild(ALPHA_GUILD_ID)
 	proRoles = [
 		getFromDiscord(alphaGuild.roles, id=484387309303758848),  # Subscriber role
 		getFromDiscord(alphaGuild.roles, id=1041085930880127098), # Licensing role
@@ -414,8 +417,14 @@ async def update_static_messages():
 		rulesAndTosChannel = bot.get_channel(601160698310950914)
 		guildRulesMessage = await rulesAndTosChannel.fetch_message(850729258049601556)
 		termsOfServiceMessage = await rulesAndTosChannel.fetch_message(850729261216301086)
-		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of the official Alpha.bot community must follow the community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on January 31, 2020).", color=0x673AB7), suppress=False)
+		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of the official Alpha.bot community must follow all community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on July 1, 2023).", color=0x673AB7), suppress=False)
 		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha.bot branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
+
+		astariaRulesAndTosChannel = bot.get_channel(1127148465189834773)
+		astariaGuildRulesMessage = await astariaRulesAndTosChannel.fetch_message(1127155556797386813)
+		astariaTermsOfServiceMessage = await astariaRulesAndTosChannel.fetch_message(1127155574883221635)
+		if astariaGuildRulesMessage is not None: await astariaGuildRulesMessage.edit(content=None, embed=Embed(title="All members of the official Alpha.bot community must follow all community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on July 1, 2023).", color=0x673AB7), suppress=False)
+		if astariaTermsOfServiceMessage is not None: await astariaTermsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha.bot branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
 
 	except CancelledError: pass
 	except:
