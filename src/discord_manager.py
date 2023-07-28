@@ -99,7 +99,7 @@ async def update_alpha_guild_roles(only=None):
 	finally:
 		print(f"Updated Alpha.bot roles in {round(time() - start, 2)} seconds.")
 
-@tasks.loop(minutes=5.0)
+@tasks.loop(minutes=30.0)
 async def update_astaria_guild_roles(only=None):
 	if not environ["PRODUCTION"]: return
 	start = time()
@@ -437,7 +437,7 @@ async def on_ready():
 		getFromDiscord(alphaGuild.roles, id=647824289923334155),  # Registered role
 	]
 	cachedAstariaRoles = [
-		getFromDiscord(astariaGuildGuild.roles, id=1134363671930355743), # Community owner role
+		getFromDiscord(astariaGuild.roles, id=1134363671930355743), # Community owner role
 	]
 
 	await update_system_status()
@@ -445,6 +445,8 @@ async def on_ready():
 
 	if not update_alpha_guild_roles.is_running():
 		update_alpha_guild_roles.start()
+	if not update_astaria_guild_roles.is_running():
+		update_astaria_guild_roles.start()
 	if not update_system_status.is_running():
 		update_system_status.start()
 	if not update_nickname_review.is_running():
