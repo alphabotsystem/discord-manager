@@ -28,6 +28,7 @@ logging = ErrorReportingClient(service="discord_manager")
 # -------------------------
 
 ALPHA_GUILD_ID = 414498292655980583
+ASTARIA_GUILD_ID = 1110573693664510032
 
 intents = Intents.all()
 bot = Client(intents=intents, status=Status.invisible, activity=None)
@@ -40,8 +41,10 @@ tree = app_commands.CommandTree(bot)
 
 @bot.event
 async def on_member_join(member):
-	if member.guild.id != ALPHA_GUILD_ID: return
-	await update_alpha_guild_roles(only=member.id)
+	if member.guild.id == ALPHA_GUILD_ID:
+		await update_alpha_guild_roles(only=member.id)
+	elif member.guild.id == ASTARIA_GUILD_ID:
+		await update_astaria_guild_roles(only=member.id)
 
 @tasks.loop(minutes=5.0)
 async def update_alpha_guild_roles(only=None):
@@ -62,31 +65,31 @@ async def update_alpha_guild_roles(only=None):
 				properties = await accountProperties.get(accountId)
 				if properties is None: continue
 
-				if proRoles[3] not in member.roles:
-					try: await member.add_roles(proRoles[3])
+				if cachedAlphaRoles[3] not in member.roles:
+					try: await member.add_roles(cachedAlphaRoles[3])
 					except: pass
 
 				if len(properties["apiKeys"].keys()) != 0:
-					if proRoles[2] not in member.roles:
-						try: await member.add_roles(proRoles[2])
+					if cachedAlphaRoles[2] not in member.roles:
+						try: await member.add_roles(cachedAlphaRoles[2])
 						except: pass
-				elif proRoles[2] in member.roles:
-					try: await member.remove_roles(proRoles[2])
+				elif cachedAlphaRoles[2] in member.roles:
+					try: await member.remove_roles(cachedAlphaRoles[2])
 					except: pass
 
 				if len(properties["customer"].get("subscriptions", {}).keys()) > 0:
-					if proRoles[0] not in member.roles:
-						await member.add_roles(proRoles[0])
+					if cachedAlphaRoles[0] not in member.roles:
+						await member.add_roles(cachedAlphaRoles[0])
 					if properties["customer"]["subscriptions"].get("botLicense", 0) > 0:
 						await handle_bot_license(member, accountId)
-					elif proRoles[1] in member.roles:
+					elif cachedAlphaRoles[1] in member.roles:
 						await handle_bot_license(member, accountId, add=False)
-				elif proRoles[0] in member.roles:
-					try: await member.remove_roles(proRoles[0])
+				elif cachedAlphaRoles[0] in member.roles:
+					try: await member.remove_roles(cachedAlphaRoles[0])
 					except: pass
 
-			elif proRoles[0] in member.roles or proRoles[1] in member.roles or proRoles[3] in member.roles:
-				try: await member.remove_roles(proRoles[0], proRoles[1], proRoles[3])
+			elif cachedAlphaRoles[0] in member.roles or cachedAlphaRoles[1] in member.roles or cachedAlphaRoles[3] in member.roles:
+				try: await member.remove_roles(cachedAlphaRoles[0], cachedAlphaRoles[1], cachedAlphaRoles[3])
 				except: pass
 
 	except CancelledError: pass
@@ -94,12 +97,46 @@ async def update_alpha_guild_roles(only=None):
 		print(format_exc())
 		if environ["PRODUCTION"]: logging.report_exception()
 	finally:
-		print(f"Updated roles in {round(time() - start, 2)} seconds.")
+		print(f"Updated Alpha.bot roles in {round(time() - start, 2)} seconds.")
+
+@tasks.loop(minutes=5.0)
+async def update_astaria_guild_roles(only=None):
+	if not environ["PRODUCTION"]: return
+	start = time()
+	try:
+		if not await accountProperties.check_status(): return
+		accounts = await accountProperties.keys()
+		if len(accounts.keys()) == 0: return
+		matches = {value: key for key, value in accounts.items()}
+
+		for member in astariaGuild.members:
+			if only is not None and only != member.id: continue
+
+			accountId = matches.get(str(member.id))
+
+			if accountId is not None:
+				properties = await accountProperties.get(accountId)
+				if properties is None: continue
+
+				if cachedAstariaRoles[0] not in member.roles:
+					try: await member.add_roles(cachedAstariaRoles[0])
+					except: pass
+
+			elif cachedAstariaRoles[0] in member.roles:
+				try: await member.remove_roles(cachedAstariaRoles[0])
+				except: pass
+
+	except CancelledError: pass
+	except:
+		print(format_exc())
+		if environ["PRODUCTION"]: logging.report_exception()
+	finally:
+		print(f"Updated Alpha.bot x Astaria roles in {round(time() - start, 2)} seconds.")
 
 async def handle_bot_license(member, accountId, add=True):
 	if add:
-		if proRoles[1] not in member.roles:
-			await member.add_roles(proRoles[1])
+		if cachedAlphaRoles[1] not in member.roles:
+			await member.add_roles(cachedAlphaRoles[1])
 
 		for channel in alphaGuild.channels:
 			if channel.type != ChannelType.text: continue
@@ -113,7 +150,7 @@ async def handle_bot_license(member, accountId, add=True):
 			category=categoryChannel,
 			overwrites={
 				alphaGuild.default_role: PermissionOverwrite(read_messages=False),
-				proRoles[1]: PermissionOverwrite(read_messages=False),
+				cachedAlphaRoles[1]: PermissionOverwrite(read_messages=False),
 				member: PermissionOverwrite(read_messages=True, send_messages=True)
 			}
 		)
@@ -127,8 +164,8 @@ async def handle_bot_license(member, accountId, add=True):
 		)
 
 	else:
-		if proRoles[1] in member.roles:
-			await member.remove_roles(proRoles[1])
+		if cachedAlphaRoles[1] in member.roles:
+			await member.remove_roles(cachedAlphaRoles[1])
 
 		for channel in alphaGuild.channels:
 			if channel.type != ChannelType.text: continue
@@ -368,7 +405,7 @@ async def on_message(message):
 			return
 
 		await message.channel.send(
-			content="Hey there, this channel is intended for testing purposes. You can use <#1019642541374705787>, if you're looking for help, or <#480464108794281994> if you just want to chat.",
+			content="Hey there, this channel is intended for testing purposes. If you're looking for the documentation, check https://www.alpha.bot/features. If you're looking for help, you can use <#1019642541374705787>, or <#480464108794281994> if you just want to chat.",
 			reference=message,
 			mention_author=True
 		)
@@ -379,7 +416,9 @@ async def on_message(message):
 
 accountProperties = DatabaseConnector(mode="account")
 alphaGuild = None
-proRoles = None
+astariaGuild = None
+cachedAlphaRoles = None
+cachedAstariaRoles = None
 
 BOTS = [401328409499664394, 739420701211099178]
 TEST_CHANNELS = [814143168996048936, 417784977841979402]
@@ -387,14 +426,18 @@ lastHeadsup = {}
 
 @bot.event
 async def on_ready():
-	global alphaGuild, proRoles
+	global alphaGuild, astariaGuild, cachedAlphaRoles, cachedAstariaRoles
 
 	alphaGuild = bot.get_guild(ALPHA_GUILD_ID)
-	proRoles = [
+	astariaGuild = bot.get_guild(ASTARIA_GUILD_ID)
+	cachedAlphaRoles = [
 		getFromDiscord(alphaGuild.roles, id=484387309303758848),  # Subscriber role
 		getFromDiscord(alphaGuild.roles, id=1041085930880127098), # Licensing role
 		getFromDiscord(alphaGuild.roles, id=593768473277104148),  # Ichibot role
 		getFromDiscord(alphaGuild.roles, id=647824289923334155),  # Registered role
+	]
+	cachedAstariaRoles = [
+		getFromDiscord(astariaGuildGuild.roles, id=1134363671930355743), # Community owner role
 	]
 
 	await update_system_status()
