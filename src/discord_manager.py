@@ -158,7 +158,7 @@ async def handle_bot_license(member, accountId, add=True):
 			content=member.mention,
 			embed=Embed(
 				title="Thank you for purchasing a bot license. Let's begin!",
-				description="To begin with the setup, please provide your bot's token in this channel. You can find your bot's token in the [Discord Developer Portal](https://discord.com/developers/applications). We can set up your bot for you as well, in which case you'll need to provide a name and a profile picture.\n\nIn addition to your bot's info, please post a permanent invite to the server in which the bot will be present. You can use the bot in multiple servers only if those servers are associated with each other.\n\nA team member will be with you as soon as possible to help you with further steps.",
+				description="To begin with the setup, please provide your bot's token in this channel. You can find your bot's token in the [Discord Developer Portal](https://discord.com/developers/applications). We can set up a bot user for you as well, in which case you'll need to provide a name and a profile picture.\n\nFor quicker setup, you can provide an invite link to the Discord server in which the bot will be present. You can use the bot in multiple servers, if they are associated with each other.\n\nA team member will be with you as soon as possible to help you with further steps. We aim to respond and bring your bot online within 24 hours.",
 				color=0x9C27B0
 			)
 		)
