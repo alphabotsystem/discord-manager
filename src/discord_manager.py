@@ -28,7 +28,6 @@ logging = ErrorReportingClient(service="discord_manager")
 # -------------------------
 
 ALPHA_GUILD_ID = 414498292655980583
-ASTARIA_GUILD_ID = 1110573693664510032
 
 intents = Intents.all()
 bot = Client(intents=intents, status=Status.invisible, activity=None)
@@ -43,8 +42,6 @@ tree = app_commands.CommandTree(bot)
 async def on_member_join(member):
 	if member.guild.id == ALPHA_GUILD_ID:
 		await update_alpha_guild_roles(only=member.id)
-	elif member.guild.id == ASTARIA_GUILD_ID:
-		await update_astaria_guild_roles(only=member.id)
 
 @tasks.loop(minutes=5.0)
 async def update_alpha_guild_roles(only=None):
@@ -98,40 +95,6 @@ async def update_alpha_guild_roles(only=None):
 		if environ["PRODUCTION"]: logging.report_exception()
 	finally:
 		print(f"Updated Alpha.bot roles in {round(time() - start, 2)} seconds.")
-
-@tasks.loop(minutes=30.0)
-async def update_astaria_guild_roles(only=None):
-	if not environ["PRODUCTION"]: return
-	start = time()
-	try:
-		if not await accountProperties.check_status(): return
-		accounts = await accountProperties.keys()
-		if len(accounts.keys()) == 0: return
-		matches = {value: key for key, value in accounts.items()}
-
-		for member in astariaGuild.members:
-			if only is not None and only != member.id: continue
-
-			accountId = matches.get(str(member.id))
-
-			if accountId is not None:
-				properties = await accountProperties.get(accountId)
-				if properties is None: continue
-
-				if cachedAstariaRoles[0] not in member.roles:
-					try: await member.add_roles(cachedAstariaRoles[0])
-					except: pass
-
-			elif cachedAstariaRoles[0] in member.roles:
-				try: await member.remove_roles(cachedAstariaRoles[0])
-				except: pass
-
-	except CancelledError: pass
-	except:
-		print(format_exc())
-		if environ["PRODUCTION"]: logging.report_exception()
-	finally:
-		print(f"Updated Alpha.bot x Astaria roles in {round(time() - start, 2)} seconds.")
 
 async def handle_bot_license(member, accountId, add=True):
 	if add:
@@ -416,9 +379,7 @@ async def on_message(message):
 
 accountProperties = DatabaseConnector(mode="account")
 alphaGuild = None
-astariaGuild = None
 cachedAlphaRoles = None
-cachedAstariaRoles = None
 
 BOTS = [401328409499664394, 739420701211099178]
 TEST_CHANNELS = [814143168996048936, 417784977841979402]
@@ -426,18 +387,14 @@ lastHeadsup = {}
 
 @bot.event
 async def on_ready():
-	global alphaGuild, astariaGuild, cachedAlphaRoles, cachedAstariaRoles
+	global alphaGuild, cachedAlphaRoles
 
 	alphaGuild = bot.get_guild(ALPHA_GUILD_ID)
-	astariaGuild = bot.get_guild(ASTARIA_GUILD_ID)
 	cachedAlphaRoles = [
 		getFromDiscord(alphaGuild.roles, id=484387309303758848),  # Subscriber role
 		getFromDiscord(alphaGuild.roles, id=1041085930880127098), # Licensing role
 		getFromDiscord(alphaGuild.roles, id=593768473277104148),  # Ichibot role
 		getFromDiscord(alphaGuild.roles, id=647824289923334155),  # Registered role
-	]
-	cachedAstariaRoles = [
-		getFromDiscord(astariaGuild.roles, id=1134363671930355743), # Community owner role
 	]
 
 	await update_system_status()
@@ -445,8 +402,6 @@ async def on_ready():
 
 	if not update_alpha_guild_roles.is_running():
 		update_alpha_guild_roles.start()
-	if not update_astaria_guild_roles.is_running():
-		update_astaria_guild_roles.start()
 	if not update_system_status.is_running():
 		update_system_status.start()
 	if not update_nickname_review.is_running():
@@ -464,12 +419,6 @@ async def update_static_messages():
 		termsOfServiceMessage = await rulesAndTosChannel.fetch_message(850729261216301086)
 		if guildRulesMessage is not None: await guildRulesMessage.edit(content=None, embed=Embed(title="All members of the official Alpha.bot community must follow all community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on July 1, 2023).", color=0x673AB7), suppress=False)
 		if termsOfServiceMessage is not None: await termsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha.bot branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
-
-		astariaRulesAndTosChannel = bot.get_channel(1127148465189834773)
-		astariaGuildRulesMessage = await astariaRulesAndTosChannel.fetch_message(1127155556797386813)
-		astariaTermsOfServiceMessage = await astariaRulesAndTosChannel.fetch_message(1127155574883221635)
-		if astariaGuildRulesMessage is not None: await astariaGuildRulesMessage.edit(content=None, embed=Embed(title="All members of the official Alpha.bot community must follow all community rules. Failure to do so will result in a warning, kick, or ban, based on our sole discretion.", description="[Community rules](https://www.alpha.bot/community-rules) (last modified on July 1, 2023).", color=0x673AB7), suppress=False)
-		if astariaTermsOfServiceMessage is not None: await astariaTermsOfServiceMessage.edit(content=None, embed=Embed(title="By using Alpha.bot branded services you agree to our Terms of Service and Privacy Policy. You can read them on our website.", description="[Terms of Service](https://www.alpha.bot/terms-of-service) (last modified on September 25, 2022)\n[Privacy Policy](https://www.alpha.bot/privacy-policy) (last modified on June 24, 2022).", color=0x673AB7), suppress=False)
 
 	except CancelledError: pass
 	except:
