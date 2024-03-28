@@ -350,13 +350,20 @@ async def on_message(message):
 
 	if message.clean_content.startswith("/"):
 		await message.channel.send(
-			content="Looks like you're trying to use slash commands. Here's a video to help you out! https://www.youtube.com/watch?v=4XxcpBxSCiU",
+			content="Looks like you're trying to use slash commands. You're almost there, just type `/` in the chat and you'll see a list of commands you can use. When you want to execute a command, make sure Discord is displaying it in the chat box. For the full list of commands with examples, you can check out [our website](https://www.alpha.bot/features).\nhttps://storage.alpha.bot/Command.png",
 			reference=message,
 			mention_author=True
 		)
 
 	elif "<@401328409499664394>" in message.content:
 		await message.channel.send(content="<@361916376069439490>")
+
+	elif "signal" in message.clean_content.lower() and len(message.clean_content) < 40:
+		await message.channel.send(
+			content="Hey there, it looks like you're looking for signals. We unfortunately don't provide signals, but you can check out the [our website](https://www.alpha.bot) for more information.",
+			reference=message,
+			mention_author=True
+		)
 
 	elif message.channel.id in TEST_CHANNELS:
 		lastTime = lastHeadsup.get(message.channel.id, 0)
