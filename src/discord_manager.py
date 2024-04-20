@@ -216,7 +216,7 @@ class NicknameReview(View):
 		}, merge=True)
 
 	@button(label="Global allow", style=ButtonStyle.blurple)
-	async def deny(self, interaction: Interaction, button: Button):
+	async def global_allow(self, interaction: Interaction, button: Button):
 		await interaction.message.delete()
 		await database.document("discord/settings").update({
 			"nicknameWhitelist": ArrayUnion([self.nickname])
