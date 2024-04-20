@@ -404,7 +404,7 @@ async def on_message(message):
 
 	elif message.channel.id == 1113820312795086969:
 		await message.channel.purge(limit=20, check=lambda m: m.author.id == bot.user.id)
-		image = Embed(title="Add NASDAQ halt alerts to your server!", description="To add NASDAQ halt alerts, visit your community settings on [our website](https://www.alpha.bot/communities) and add a webhook URL in the NASDAQ Trade Halt Alerts section.")
+		embed = Embed(title="Add NASDAQ halt alerts to your server!", description="To add NASDAQ halt alerts, visit your community settings on [our website](https://www.alpha.bot/communities) and add a webhook URL in the NASDAQ Trade Halt Alerts section.")
 		embed.set_image(url="https://storage.alpha.bot/HaltAlerts.png")
 		await message.channel.send(
 			embed=embed,
