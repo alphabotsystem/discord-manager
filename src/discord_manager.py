@@ -8,12 +8,14 @@ from datetime import datetime, timedelta, timezone
 from asyncio import CancelledError, sleep, gather
 from traceback import format_exc
 from json import dumps
+import aiohttp
 
 from discord import app_commands, Client, Embed, ButtonStyle, Interaction, Member, Role, Intents, Status, ChannelType, PermissionOverwrite
 from discord.ui import View, button, Button
 from discord.ext import tasks
 from discord.utils import get as getFromDiscord
 from google.cloud.firestore import AsyncClient as FirestoreAsyncClient
+from google.cloud.firestore import ArrayUnion
 from google.cloud.error_reporting import Client as ErrorReportingClient
 
 from DatabaseConnector import DatabaseConnector
@@ -78,9 +80,7 @@ async def update_alpha_guild_roles(only=None):
 					if cachedAlphaRoles[0] not in member.roles:
 						await member.add_roles(cachedAlphaRoles[0])
 					if properties["customer"]["subscriptions"].get("botLicense", 0) > 0:
-						await handle_bot_license(member, accountId)
-					elif cachedAlphaRoles[1] in member.roles:
-						await handle_bot_license(member, accountId, add=False)
+						await handle_bot_license_onboarding(member, accountId)
 				elif cachedAlphaRoles[0] in member.roles:
 					try: await member.remove_roles(cachedAlphaRoles[0])
 					except: pass
@@ -89,6 +89,8 @@ async def update_alpha_guild_roles(only=None):
 				try: await member.remove_roles(cachedAlphaRoles[0], cachedAlphaRoles[1], cachedAlphaRoles[3])
 				except: pass
 
+		await handle_bot_license_cancellations(accounts)
+
 	except CancelledError: pass
 	except:
 		print(format_exc())
@@ -96,46 +98,47 @@ async def update_alpha_guild_roles(only=None):
 	finally:
 		print(f"Updated Alpha.bot roles in {round(time() - start, 2)} seconds.")
 
-async def handle_bot_license(member, accountId, add=True):
-	if add:
-		if cachedAlphaRoles[1] not in member.roles:
-			await member.add_roles(cachedAlphaRoles[1])
+async def handle_bot_license_cancellations(accounts):
+	for channel in alphaGuild.channels:
+		if channel.type != ChannelType.text: continue
+		if channel.category_id != 1041086360062263438: continue
 
-		for channel in alphaGuild.channels:
-			if channel.type != ChannelType.text: continue
-			if channel.category_id != 1041086360062263438: continue
-			if channel.topic == accountId: return
+		properties = await accountProperties.get(channel.topic)
+		member = alphaGuild.get_member(int(accounts[channel.topic]))
 
-		categoryChannel = alphaGuild.get_channel(1041086360062263438)
-		newChannel = await alphaGuild.create_text_channel(
-			name=f"{member.name}-license",
-			topic=accountId,
-			category=categoryChannel,
-			overwrites={
-				alphaGuild.default_role: PermissionOverwrite(read_messages=False),
-				cachedAlphaRoles[1]: PermissionOverwrite(read_messages=False),
-				member: PermissionOverwrite(read_messages=True, send_messages=True)
-			}
+		if properties["customer"]["subscriptions"].get("botLicense", 0) == 0:
+			if member is not None and cachedAlphaRoles[1] in member.roles:
+				await member.remove_roles(cachedAlphaRoles[1])
+			await channel.send(content="Customer has canceled the subscription.")
+
+async def handle_bot_license_onboarding(member, accountId):
+	if cachedAlphaRoles[1] not in member.roles:
+		await member.add_roles(cachedAlphaRoles[1])
+
+	for channel in alphaGuild.channels:
+		if channel.type != ChannelType.text: continue
+		if channel.category_id != 1041086360062263438: continue
+		if channel.topic == accountId: return
+
+	categoryChannel = alphaGuild.get_channel(1041086360062263438)
+	newChannel = await alphaGuild.create_text_channel(
+		name=f"{member.name}-license",
+		topic=accountId,
+		category=categoryChannel,
+		overwrites={
+			alphaGuild.default_role: PermissionOverwrite(read_messages=False),
+			cachedAlphaRoles[1]: PermissionOverwrite(read_messages=False),
+			member: PermissionOverwrite(read_messages=True, send_messages=True)
+		}
+	)
+	await newChannel.send(
+		content=member.mention,
+		embed=Embed(
+			title="Thank you for purchasing a bot license. Let's begin!",
+			description="To begin with the setup, please create a new bot in the [Discord Developer Portal](https://discord.com/developers/applications), and send over the token in this channel. You can find your bot's token in the `bot` tab in the portal by clicking the `reset token` button. We can set up a bot user for you as well, in which case you have to provide a name and a profile picture.\n\nA team member will be with you as soon as possible to help you with further steps. We aim to respond and bring your bot online within 24 hours. We'll connect your bot with our hosting as soon as all the details are provided.",
+			color=0x9C27B0
 		)
-		await newChannel.send(
-			content=member.mention,
-			embed=Embed(
-				title="Thank you for purchasing a bot license. Let's begin!",
-				description="To begin with the setup, please create a new bot in the [Discord Developer Portal](https://discord.com/developers/applications), and send over the token in this channel. You can find your bot's token in the `bot` tab in the portal by clicking the `reset token` button. We can set up a bot user for you as well, in which case you have to provide a name and a profile picture.\n\nA team member will be with you as soon as possible to help you with further steps. We aim to respond and bring your bot online within 24 hours. We'll connect your bot with our hosting as soon as all the details are provided.",
-				color=0x9C27B0
-			)
-		)
-
-	else:
-		if cachedAlphaRoles[1] in member.roles:
-			await member.remove_roles(cachedAlphaRoles[1])
-
-		for channel in alphaGuild.channels:
-			if channel.type != ChannelType.text: continue
-			if channel.category_id != 1041086360062263438: continue
-			if channel.topic == accountId:
-				await channel.send(content="Customer has canceled the subscription.")
-				return
+	)
 
 
 # -------------------------
@@ -181,13 +184,14 @@ async def update_nickname_review():
 
 	for guild, data in nicknames.items():
 		if data["allowed"] is None:
-			await channel.send(embed=Embed(title=f"{data['server name']} ({guild}): {data['nickname']}"), view=NicknameReview(guild))
+			await channel.send(embed=Embed(title=f"{data['server name']} ({guild}): {data['nickname']}"), view=NicknameReview(guild, data['nickname']))
 
 
 class NicknameReview(View):
-	def __init__(self, guildId):
+	def __init__(self, guildId, nickname):
 		super().__init__(timeout=None)
 		self.guildId = guildId
+		self.nickname = nickname
 
 	@button(label="Allow", style=ButtonStyle.green)
 	async def allow(self, interaction: Interaction, button: Button):
@@ -210,6 +214,13 @@ class NicknameReview(View):
 				}
 			}
 		}, merge=True)
+
+	@button(label="Global allow", style=ButtonStyle.blurple)
+	async def deny(self, interaction: Interaction, button: Button):
+		await interaction.message.delete()
+		await database.document("discord/settings").update({
+			"nicknameWhitelist": ArrayUnion([self.nickname])
+		})
 
 class PortalBeta(View):
 	def __init__(self, role):
@@ -349,11 +360,22 @@ async def on_message(message):
 		return
 
 	if message.clean_content.startswith("/"):
-		await message.channel.send(
-			content="Looks like you're trying to use slash commands. You're almost there, just type `/` in the chat and you'll see a list of commands you can use. When you want to execute a command, make sure Discord is displaying it in the chat box. For the full list of commands with examples, you can check out [our website](https://www.alpha.bot/features).\nhttps://storage.alpha.bot/Command.png",
-			reference=message,
-			mention_author=True
-		)
+		async with aiohttp.ClientSession() as session:
+			async with session.get("https://storage.alpha.bot/Command.png") as resp:
+				if resp.status != 200:
+					await message.channel.send(
+						content="Looks like you're trying to use slash commands. You're almost there, just type `/` in the chat and you'll see a list of commands you can use. When you want to execute a command, make sure Discord is displaying it in the chat box. For the full list of commands with examples, you can check out [our website](https://www.alpha.bot/features).",
+						reference=message,
+						mention_author=True
+					)
+				else:
+					data = io.BytesIO(await resp.read())
+					await message.channel.send(
+						content="Looks like you're trying to use slash commands. You're almost there, just type `/` in the chat and you'll see a list of commands you can use. When you want to execute a command, make sure Discord is displaying it in the chat box. For the full list of commands with examples, you can check out [our website](https://www.alpha.bot/features).",
+						file=discord.File(data, 'slash_commands.png'),
+						reference=message,
+						mention_author=True
+					)
 
 	elif "<@401328409499664394>" in message.content:
 		await message.channel.send(content="<@361916376069439490>")
@@ -378,6 +400,16 @@ async def on_message(message):
 			content="Hey there, this channel is intended for testing purposes. If you're looking for the documentation, check https://www.alpha.bot/features. If you're looking for help, you can use <#1019642541374705787>, or <#480464108794281994> if you just want to chat.",
 			reference=message,
 			mention_author=True
+		)
+
+	elif message.channel.id == 1113820312795086969:
+		await message.channel.purge(limit=20, check=lambda m: m.author.id == bot.user.id)
+		await message.channel.send(
+			embed=Embed(
+				title="Add NASDAQ halt alerts to your server!",
+				description="To add NASDAQ halt alerts, visit your community settings on [our website](https://www.alpha.bot/communities) and add a webhook URL in the NASDAQ Trade Halt Alerts section.",
+				image="https://storage.alpha.bot/HaltAlerts.png"
+			)
 		)
 
 # -------------------------
