@@ -110,6 +110,7 @@ async def handle_bot_license_cancellations(accounts):
 			if member is not None and cachedAlphaRoles[1] in member.roles:
 				await member.remove_roles(cachedAlphaRoles[1])
 			await channel.send(content="Customer has canceled the subscription.")
+			await channel.edit(category=alphaGuild.get_channel(1104478079813963828))
 
 async def handle_bot_license_onboarding(member, accountId):
 	if cachedAlphaRoles[1] not in member.roles:
