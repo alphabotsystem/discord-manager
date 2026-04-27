@@ -146,35 +146,6 @@ async def handle_bot_license_onboarding(member, accountId):
 # Job functions
 # -------------------------
 
-@tasks.loop(minutes=1.0)
-async def update_system_status():
-	try:
-		t = datetime.now().astimezone(timezone.utc)
-		statistics = await database.document("discord/statistics").get()
-		statistics = statistics.to_dict()["{}-{:02d}".format(t.year, t.month)]
-		t2 = t + timedelta(minutes=5)
-		if t2.month != t.month:
-			await database.document("discord/statistics").set({"{}-{:02d}".format(t2.year, t2.month): statistics}, merge=True)
-
-		numOfCharts = ":chart_with_upwards_trend: {:,} charts requested".format(statistics["c"] + statistics["hmap"])
-		numOfAlerts = ":bell: {:,} alerts set".format(statistics["alert"])
-		numOfPrices = ":money_with_wings: {:,} prices & details pulled".format(statistics["d"] + statistics["p"] + statistics["v"] + statistics["info"] + statistics["mk"] + statistics["convert"])
-		numOfTrades = ":dart: {:,} trades executed".format(statistics["paper"] + statistics["x"])
-		numOfGuilds = ":heart: Used in {:,} Discord communities".format(statistics["servers"])
-
-		statisticsEmbed = Embed(title=f"{numOfCharts}\n{numOfAlerts}\n{numOfPrices}\n{numOfTrades}\n{numOfGuilds}", color=0x673AB7)
-
-		statusChannel = bot.get_channel(560884869899485233)
-		statsMessage = await statusChannel.fetch_message(850729112321392640)
-		if statsMessage is not None:
-			await statsMessage.edit(content=None, embed=statisticsEmbed, suppress=False)
-
-	except CancelledError: pass
-	except:
-		print(format_exc())
-		if environ["PRODUCTION"]: logging.report_exception()
-	updatingNickname = False
-
 @tasks.loop(hours=8.0)
 async def update_nickname_review():
 	channel = bot.get_channel(571786092077121536)
