@@ -406,7 +406,6 @@ async def on_ready():
 		getFromDiscord(alphaGuild.roles, id=647824289923334155),  # Registered role
 	]
 
-	await update_system_status()
 	await update_static_messages()
 
 	if not update_alpha_guild_roles.is_running():
